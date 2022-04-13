@@ -25,7 +25,6 @@ def set_up():
 
     columns.append("income")
 
-
 def convert(val, name):
     val = val.strip()
     name = name.strip()
@@ -35,21 +34,39 @@ def convert(val, name):
 
     return None
 
-def remove_trailing_spaces(val):
-    return val.strip()
+def convert_income(val):
+    temp = val.strip().strip(".")
+    if temp == "<=50K":
+        return 0
+    else:
+        return 1
 
 def process(filename):
-    data = pd.read_csv(f"processing\{filename}.csv", encoding="utf-8")
+    data = pd.read_csv(f"processing\{filename}.csv", encoding="utf-8", header=None)
+
     data.columns = columns
     
     for col in columns:
         if col == "income":
-            data[col] = data[col].apply(remove_trailing_spaces)
+
+            income = data[col].apply(convert_income)
+
+            data = data.drop([col], axis=1)
+            data = pd.concat([data, income], axis=1)
+            
             continue
 
         if col in col_map:
             data[col] = data[col].apply(convert, name=col)
-            one_hot = pd.get_dummies(data[col], prefix=col)
+            one_hot = pd.get_dummies(data[col], prefix="", prefix_sep="")
+
+            # new_columns = []
+
+            # for i in range(0, len(col_map[col])):
+            #     new_columns.append(col + "_" + str(float(i)))
+
+            new_columns = list(col_map[col])
+            one_hot = one_hot.reindex(columns=new_columns, fill_value=0)
 
             data = pd.concat([data, one_hot], axis=1)
             data = data.drop([col], axis=1)
@@ -59,6 +76,9 @@ def process(filename):
 
     data.to_csv(f"processing\{filename}_cleaned.csv", index=False)
 
+
+
+# total 105 feature columns and one output column
 
 set_up()
 process("test_data")
