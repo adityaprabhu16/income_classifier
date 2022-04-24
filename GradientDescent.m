@@ -1,4 +1,5 @@
 function [theta, J_history] = GradientDescent(X,y,theta,lambda,alpha,num_iters)
+  %lambda {0, 0.01, 0.02, 0.04, 0.08, 0.16 ..., 10.24}
 m = length(y);
 J_history = zeros(size(num_iters),1);
 for i = 1:num_iters
